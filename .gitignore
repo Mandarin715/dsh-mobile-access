@@ -1,0 +1,26 @@
+# Never commit secrets, certs, or private keys
+*.pem
+*.key
+*.crt
+.env
+*.secret
+
+# frp binaries (users build/download their own)
+frpc
+frps
+frpc.exe
+frps.exe
+
+# Real (filled-in) config, not templates
+frpc.toml
+frps.toml
+
+# Local logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Node
+node_modules/

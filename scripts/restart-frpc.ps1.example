@@ -1,0 +1,14 @@
+# restart-frpc.ps1 example (dsh-mobile-access)
+# Restart the frpc tunnel (e.g., after config change).
+$ErrorActionPreference = 'Continue'
+Write-Host '=== stop frpc ==='
+Get-Process frpc -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+Start-Sleep 2
+
+Write-Host '=== start frpc (hidden, independent) ==='
+$frpc = '<path-to-frpc.exe>'
+$cfg  = '<path-to-frpc.toml>'
+Start-Process -FilePath $frpc -ArgumentList '-c', $cfg -WindowStyle Hidden | Out-Null
+Start-Sleep 8
+if (Get-Process frpc -ErrorAction SilentlyContinue) { Write-Host "  frpc running pid=$((Get-Process frpc|Select-Object -First 1).Id) OK" } else { Write-Host '  WARN: frpc not running' }
+Write-Host '=== done ==='

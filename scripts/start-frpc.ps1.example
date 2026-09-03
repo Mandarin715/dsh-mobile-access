@@ -1,0 +1,32 @@
+# start-frpc.ps1 example (dsh-mobile-access)
+# Run this at logon to keep the frpc tunnel alive. Make frpc a background,
+# window-independent process (Start-Process, no console window), so closing
+# consoles does not break the tunnel.
+#
+# REPLACE:
+#   <path-to-frpc.exe>  -> absolute path to frpc.exe on your machine
+#   <path-to-frpc.toml> -> absolute path to your frpc.toml (see config/)
+$ErrorActionPreference = 'Continue'
+$log = Join-Path $env:USERPROFILE '.dsh\logs\frpc-autostart.log'
+$null = New-Item -ItemType Directory -Force -Path (Split-Path $log)
+"=== frpc autostart $(Get-Date -Format o) ===" | Out-File -FilePath $log -Append -Encoding utf8
+
+if (Get-Process frpc -ErrorAction SilentlyContinue) {
+    "frpc already running, skip" | Out-File -FilePath $log -Append -Encoding utf8
+    exit 0
+}
+
+$frpc = '<path-to-frpc.exe>'
+$cfg  = '<path-to-frpc.toml>'
+
+# Launch frpc as an independent hidden process (survives closing consoles).
+$p = Start-Process -FilePath $frpc -ArgumentList '-c', $cfg -WindowStyle Hidden -PassThru
+"launched frpc via Start-Process, pid=$($p.Id)" | Out-File -FilePath $log -Append -Encoding utf8
+
+Start-Sleep -Seconds 8
+if (Get-Process frpc -ErrorAction SilentlyContinue) {
+    "verified frpc running" | Out-File -FilePath $log -Append -Encoding utf8
+} else {
+    "WARN: frpc not running after launch" | Out-File -FilePath $log -Append -Encoding utf8
+}
+"=== frpc autostart done $(Get-Date -Format o) ===" | Out-File -FilePath $log -Append -Encoding utf8

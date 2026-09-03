@@ -1,0 +1,11 @@
+# frps server config template (dsh-mobile-access)
+# Run this on your VPS. It accepts frpc connections (port 7000) and serves the
+# HTTPS virtual host on port 443.
+#
+# REPLACE PLACEHOLDERS:
+#   (no secrets needed here; bind ports only)
+bindAddr = "0.0.0.0"
+bindPort = 7000
+vhostHTTPSPort = 443
+# Optional dashboard (localhost only):
+webServer.port = 7500

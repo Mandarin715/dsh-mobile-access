@@ -1,0 +1,22 @@
+# restart-authproxy.ps1 example (dsh-mobile-access)
+# Restart the Basic-Auth + WebSocket proxy. Use after changing password/cert.
+$ErrorActionPreference = 'Continue'
+Write-Host '=== kill old auth-proxy (listening :18443) ==='
+$conns = netstat -ano | Select-String ':18443.*LISTENING'
+$pids = @()
+foreach ($l in $conns) { if ($l -match '(\d+)\s*$') { $pids += ($l.ToString() -split '\s+')[-1] } }
+$pids = $pids | Sort-Object -Unique
+foreach ($pidv in $pids) { try { Stop-Process -Id $pidv -Force -ErrorAction SilentlyContinue; Write-Host "  killed $pidv" } catch {} }
+Start-Sleep 2
+
+Write-Host '=== start auth-proxy.js ==='
+# Set credentials via env (replace placeholders)
+$env:AUTH_USER = 'YOUR_USERNAME'
+$env:AUTH_PASS = 'YOUR_PASSWORD'
+$nodeExe = (Get-Command node).Source
+$js = '<path-to-auth-proxy.js>'
+Start-Process -FilePath $nodeExe -ArgumentList $js -WindowStyle Hidden | Out-Null
+Start-Sleep 5
+$c = netstat -ano | Select-String ':18443'
+if ($c) { Write-Host '  auth-proxy listening 18443 OK' } else { Write-Host '  WARN: 18443 not listening' }
+Write-Host '=== done ==='

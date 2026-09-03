@@ -1,0 +1,30 @@
+# start-authproxy.ps1 example (dsh-mobile-access)
+# Start the Basic-Auth + WebSocket proxy at logon. This proxies the frp tunnel
+# to your local DSH, checking a shared password (Basic Auth) and tunneling
+# WebSocket for real-time updates.
+#
+# REPLACE:
+#   <path-to-auth-proxy.js> -> absolute path to config/auth-proxy.js
+# Set AUTH_USER / AUTH_PASS env vars before running (not committed).
+$ErrorActionPreference = 'Continue'
+$log = Join-Path $env:USERPROFILE '.dsh\logs\authproxy-autostart.log'
+$null = New-Item -ItemType Directory -Force -Path (Split-Path $log)
+"=== authproxy autostart $(Get-Date -Format o) ===" | Out-File -FilePath $log -Append -Encoding utf8
+
+$conn = netstat -ano | Select-String ':18443'
+if ($conn) { "already running, skip" | Out-File -FilePath $log -Append -Encoding utf8; exit 0 }
+
+# Provide credentials via env vars (don't commit real ones).
+$env:AUTH_USER = 'YOUR_USERNAME'
+$env:AUTH_PASS = 'YOUR_PASSWORD'
+
+$node = (Get-Command node).Source
+$js = '<path-to-auth-proxy.js>'
+$p = Start-Process -FilePath $node -ArgumentList $js -WindowStyle Hidden -PassThru
+"launched auth-proxy, pid=$($p.Id)" | Out-File -FilePath $log -Append -Encoding utf8
+
+Start-Sleep -Seconds 5
+$c = netstat -ano | Select-String ':18443'
+if ($c) { "verified 18443 listening" | Out-File -FilePath $log -Append -Encoding utf8 }
+else { "WARN: 18443 not listening" | Out-File -FilePath $log -Append -Encoding utf8 }
+"=== done $(Get-Date -Format o) ===" | Out-File -FilePath $log -Append -Encoding utf8

@@ -1,0 +1,26 @@
+# frpc client config template (dsh-mobile-access)
+# Tunnel your local DSH (DeepSeek Harness web UI) to your VPS so you can reach
+# it from a phone browser over the internet.
+#
+# REPLACE ALL PLACEHOLDERS with your own values:
+#   <YOUR_VPS_IP>       -> your VPS public IP
+#   <YOUR_DOMAIN>       -> the domain you pointed at the VPS (e.g., derp.example.com)
+#   <path-to-cert.pem>  -> absolute path to your Let's Encrypt cert
+#   <path-to-key.pem>   -> absolute path to your Let's Encrypt key
+#
+# NOTE: the real access password is enforced by the auth-proxy.js (Basic Auth),
+# not here. This file only wires up the tunnel.
+serverAddr = "<YOUR_VPS_IP>"
+serverPort = 7000
+
+[[proxies]]
+name = "dsh-https"
+type = "https"
+customDomains = ["<YOUR_DOMAIN>"]
+
+[proxies.plugin]
+type = "https2http"
+# The Basic-Auth proxy listens here (see config/auth-proxy.js).
+localAddr = "127.0.0.1:18443"
+crtPath = "<path-to-cert.pem>"
+keyPath = "<path-to-key.pem>"
