@@ -3,6 +3,12 @@
 # to your local DSH, checking a shared password (Basic Auth) and tunneling
 # WebSocket for real-time updates.
 #
+# IMPORTANT (boot reliability):
+#   - Use Start-Process DIRECTLY (not cmd /b / wscript) so the process is an
+#     independent background process that survives closing consoles/sessions.
+#   - Idempotency check must match ONLY 'LISTENING' on :18443. Checking ':18443'
+#     alone matches TIME_WAIT/frpc client links and wrongly skips launching.
+#
 # REPLACE:
 #   <path-to-auth-proxy.js> -> absolute path to config/auth-proxy.js
 # Set AUTH_USER / AUTH_PASS env vars before running (not committed).
@@ -11,8 +17,12 @@ $log = Join-Path $env:USERPROFILE '.dsh\logs\authproxy-autostart.log'
 $null = New-Item -ItemType Directory -Force -Path (Split-Path $log)
 "=== authproxy autostart $(Get-Date -Format o) ===" | Out-File -FilePath $log -Append -Encoding utf8
 
-$conn = netstat -ano | Select-String ':18443'
-if ($conn) { "already running, skip" | Out-File -FilePath $log -Append -Encoding utf8; exit 0 }
+# Only LISTENING means the proxy is actually up (ignore TIME_WAIT / client links)
+$listening = netstat -ano | Select-String ':18443.*LISTENING'
+if ($listening) {
+    "already LISTENING on 18443, skip" | Out-File -FilePath $log -Append -Encoding utf8
+    exit 0
+}
 
 # Provide credentials via env vars (don't commit real ones).
 $env:AUTH_USER = 'YOUR_USERNAME'
@@ -20,11 +30,11 @@ $env:AUTH_PASS = 'YOUR_PASSWORD'
 
 $node = (Get-Command node).Source
 $js = '<path-to-auth-proxy.js>'
-$p = Start-Process -FilePath $node -ArgumentList $js -WindowStyle Hidden -PassThru
-"launched auth-proxy, pid=$($p.Id)" | Out-File -FilePath $log -Append -Encoding utf8
+$p = Start-Process -FilePath $node -ArgumentList $js -WorkingDirectory (Split-Path $js) -WindowStyle Hidden -PassThru
+"launched auth-proxy via Start-Process, pid=$($p.Id)" | Out-File -FilePath $log -Append -Encoding utf8
 
 Start-Sleep -Seconds 5
-$c = netstat -ano | Select-String ':18443'
-if ($c) { "verified 18443 listening" | Out-File -FilePath $log -Append -Encoding utf8 }
-else { "WARN: 18443 not listening" | Out-File -FilePath $log -Append -Encoding utf8 }
+$c = netstat -ano | Select-String ':18443.*LISTENING'
+if ($c) { "verified 18443 LISTENING" | Out-File -FilePath $log -Append -Encoding utf8 }
+else { "WARN: 18443 NOT LISTENING" | Out-File -FilePath $log -Append -Encoding utf8 }
 "=== done $(Get-Date -Format o) ===" | Out-File -FilePath $log -Append -Encoding utf8

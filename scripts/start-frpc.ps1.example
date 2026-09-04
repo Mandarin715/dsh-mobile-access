@@ -3,6 +3,10 @@
 # window-independent process (Start-Process, no console window), so closing
 # consoles does not break the tunnel.
 #
+# IMPORTANT (boot reliability):
+#   - Use Start-Process DIRECTLY (not cmd /b / wscript) so frpc is an
+#     independent background process that survives closing consoles/sessions.
+#
 # REPLACE:
 #   <path-to-frpc.exe>  -> absolute path to frpc.exe on your machine
 #   <path-to-frpc.toml> -> absolute path to your frpc.toml (see config/)
@@ -20,7 +24,7 @@ $frpc = '<path-to-frpc.exe>'
 $cfg  = '<path-to-frpc.toml>'
 
 # Launch frpc as an independent hidden process (survives closing consoles).
-$p = Start-Process -FilePath $frpc -ArgumentList '-c', $cfg -WindowStyle Hidden -PassThru
+$p = Start-Process -FilePath $frpc -ArgumentList '-c', $cfg -WorkingDirectory (Split-Path $frpc) -WindowStyle Hidden -PassThru
 "launched frpc via Start-Process, pid=$($p.Id)" | Out-File -FilePath $log -Append -Encoding utf8
 
 Start-Sleep -Seconds 8
