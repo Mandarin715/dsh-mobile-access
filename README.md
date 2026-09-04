@@ -7,6 +7,9 @@
 > 适合：想在手机上随时用电脑上的 AI 编程助手（DeepSeek Harness / 类似本地 Web 工具）的场景。
 > 核心思路：**VPS + frp 隧道 + HTTPS + Basic Auth + WebSocket 透传**。
 
+> ## 🎁 推荐 DSH 插件版
+> 想「一键自动化」这套配置，把它装成 DSH 插件、填参数即可，不用手动折腾？请前往 **👉 [dsh-mobile-access-plugin](https://github.com/Mandarin715/dsh-mobile-access-plugin)**（DSH 手机远程通道插件，自动生成 frp + 反代 + 开机自启配置）。
+
 ---
 
 ## 为什么做这个
