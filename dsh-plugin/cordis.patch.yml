@@ -1,0 +1,24 @@
+# dsh-mobile-access bundle patch: registers the plugin row.
+#
+# This plugin is a "channel + config deployer": it reads your VPS/domain/password
+# and generates + starts the frp tunnel, the Basic-Auth + WebSocket reverse proxy,
+# and the boot autostart scripts. It does NOT modify the DSH web UI.
+#
+# Install:
+#   dsh plugin --profile web add <repo>   (or link:<local dir> for dev)
+#
+# Configure in the profile's cordis.patch.yml (or your own patch layer), e.g.:
+#   - id: dsh-mobile-access
+#     config:
+#       vpsIp: "1.2.3.4"
+#       domain: "derp.example.com"
+#       authUser: "your-username"
+#       authPassword: "your-password"
+#       dshPort: 3080
+#       frpcPath: "C:\\path\\to\\frpc.exe"
+#       frpsPort: 7000
+#       proxyPort: 18443
+#
+- insert:
+    - id: dsh-mobile-access
+      name: dsh-mobile-access

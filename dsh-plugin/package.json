@@ -1,0 +1,31 @@
+{
+  "name": "dsh-mobile-access",
+  "version": "0.1.0",
+  "description": "让手机通过浏览器访问你电脑上的 DeepSeek Harness：一键生成 frp 隧道 + Basic Auth 反代 + 开机自启配置。通用通道插件（不锁 DSH 发行版）。",
+  "type": "module",
+  "main": "index.js",
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
+    "mobile",
+    "remote-access",
+    "frp",
+    "reverse-proxy"
+  ],
+  "files": [
+    "index.js",
+    "lib/",
+    "cordis.patch.yml",
+    "README.md",
+    "LICENSE"
+  ],
+  "dsh": {
+    "profile": {
+      "bundles": [
+        "dsh-mobile-access"
+      ]
+    }
+  },
+  "license": "MIT"
+}
