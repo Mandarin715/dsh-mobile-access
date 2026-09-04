@@ -135,7 +135,11 @@ nohup /root/frps -c /root/frps.toml > /root/frps.log 2>&1 &
 
 ### 第 6 步：开机自启（可选但推荐）
 
-用 `scripts/start-frpc.ps1.example` 和 `scripts/start-authproxy.ps1.example`，注册到 Windows「启动」或任务计划，让 DSH + frpc + 反代开机自动拉起。
+用 `scripts/start-frpc.ps1.example` 和 `scripts/start-authproxy.ps1.example`，注册到 Windows「启动」或注册表 Run（`HKCU\...\Run`），让 DSH + frpc + 反代开机自动拉起。
+
+> **⚠️ 重启自启可靠性的两个坑**（本项目实测经验，务必照做）：
+> 1. **必须用 `Start-Process` 直接启动**，不要用 `cmd /b` 或 wscript/VBS——后两者启动的进程会随登录会话/控制台结束而死，导致重启后服务反而连不上。`Start-Process` 启动的是独立后台进程。
+> 2. **幂等判断要只认 `LISTENING`**——判断"是否已运行"时检查 `netstat | Select-String '<端口>.*LISTENING'`，不要只查端口（`Select-String '<端口>'` 会匹配 TIME_WAIT 残留和 frpc 客户端连接，误判"已在运行"而跳过启动，实际反代没起来）。
 
 ---
 
